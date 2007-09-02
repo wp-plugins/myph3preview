@@ -4,7 +4,7 @@
 Plugin Name: myPh3 preview image
 Plugin URI: http://myph.sf.net
 Description: Displays a thumbnail of a selected image from a myPh3 image gallery album to preview.
-Version: 1.0
+Version: 1.1
 Author: Eric Kok
 Author URI: http://myph.sf.net
 */
@@ -58,6 +58,12 @@ function myPh3_add_slimbox_js() {
 // image (and thumbnail) thumnail, as well as show a link to the album
 function myPh3_replace_images($content = '') {
 
+  // Get the site settings of the myPh3 gallery
+  $siteDir = get_option('myPh3.siteDir');
+  if (substr($siteDir, -1) != '/') 
+    $siteDir .= '/';
+  require($siteDir . 'myPh3.config.php');
+  
   // Run through the post contents to replace tags untill there are no more
   while (strpos($content, '[preview]') !== FALSE) {
 
@@ -68,57 +74,28 @@ function myPh3_replace_images($content = '') {
       print('Error parsing myPh3 preview: no ending tag after [preview]');
       break;
     }
-    $preview = substr($content, $pos_open + 9, $pos_close - $pos_open - 9);
+    $preview_sub = substr($content, $pos_open + 9, $pos_close - $pos_open - 9);
     // Revert the replacement of the duble dash (--) by an en-dash (– or &#8211; as html char)
-    $thumb = str_replace('&#8211;', '--', $preview);
+    $preview = str_replace('&#8211;', '--', $preview_sub);
 
-    // Get the site settings of the myPh3 gallery
-    $siteDir = get_option('myPh3.siteDir');
-    if (substr($siteDir, -1) != '/') 
-      $siteDir .= '/';
-    require_once($siteDir . 'myPh3.config.php');
+    // Make full and thumb paths
+    if (strpos($preview, $m3['config']['thumbSize'] . '--') == FALSE) {
+      $full = $preview;
+      $thumb = str_replace($m3['config']['fullSize'] . '--', $m3['config']['thumbSize'] . '--', $preview);
+    } else {
+      $full = str_replace($m3['config']['thumbSize'] . '--', $m3['config']['fullSize'] . '--', $preview);
+      $thumb = $preview;
+    }
     
     // Replace the tag with the actual image links
-    $full = str_replace($m3['config']['thumbSize'], $m3['config']['fullSize'], $thumb);
     $img = '<a href="' . $full . '" rel="lightbox[myPh3]"><img src="' . $thumb . '" alt="" /></a>';
-    $content = str_replace('[preview]'.$preview.'[/preview]', $img, $content);
+    $content = str_replace('[preview]' . $preview_sub . '[/preview]', $img, $content);
 
   }
   return $content;
   
 }
 
-/*
-// The main function that writes the thumbnail in the sidebar
-function myPh3_get_random() {
-  
-  // Get the site settings of the myPh3 gallery
-  $siteDir = get_option('myPh3.siteDir');
-  if (substr($siteDir, -1) != '/') 
-    $siteDir .= '/';
-  require_once($siteDir . 'myPh3.config.php');
-  
-  // Try to read from the myPh3 thumbnail directory
-  $dirList = @opendir($siteDir . $m3['config']['thumbDir']);
-  while (($file = readdir($dirList)) !== false) {
-    // Keep only thumbnails (of which the size is specified in the config) for displaying with this plugin
-    if (substr($file, 0, strlen($m3['config']['thumbSize'] . '-')) == ($m3['config']['thumbSize'] . '-')) {
-      $candidates[] = $file;
-    }
-  }
-  
-  // Randomly select a candidate and echoo this
-  if (count($candidates) > 0) {
-    $choice = $candidates[mt_rand(0, count($candidates) - 1)];
-    $link = '/myPh3';
-    if (!$m3['config']['rewriteUrl']) $link = '/myPh3.core.php';
-    echo '<a id="myPh3-random" href="' . $m3['config']['siteUrl'] . $link . '"><img src="'  . $m3['config']['siteUrl'] . 
-      '/' . $m3['config']['thumbDir'] . '/' . $choice . '" alt="' . __('myPh3 random photo') . '" title="' . 
-      __('View my myPh3 image gallery') . '" style="border: 1px solid #e6e6df; padding: 10px; margin: 0 6px;" /></a>';
-  }
-  
-}
-*/
 // Admin screen to set the site url
 if(!function_exists('myPh3_conf')){
   function myPh3_conf() {
