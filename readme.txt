@@ -16,7 +16,7 @@ A WordPress plugin to include a myPh3 album image into your posts or pages. It m
 
 To install, place the files included in the .zip into your WordPress plugin folder (that is /wp-content/plugins/). Now, go to your WordPress blog admin dashboard and enable the plugin. Finally, go to the options - myPh3 page to set the your gallery details.
 
-In a WordPress post, you can type [preview]<photo_thumb_url>[/preview] to include a thumnail and full size photo. <photo_thumb_url> needs to be replaced here by the full URL of one of your album image thumbnails.
+In a WordPress post, you can type [preview]&lt;photo_thumb_url&gt;[/preview] to include a thumnail and full size photo. &lt;photo_thumb_url&gt; needs to be replaced here by the full URL of one of your album image thumbnails. (Right-click on an image in your gallery and choose 'Copy Shortcut'.)
 
 == Changes ==
 
