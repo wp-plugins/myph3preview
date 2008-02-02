@@ -3,8 +3,8 @@
 /*
 Plugin Name: myPh3 preview image
 Plugin URI: http://myph.sf.net
-Description: Displays a thumbnail of a selected image from a myPh3 image gallery album to preview.
-Version: 1.1
+Description: Displays the thumbnails of a selected image or whole album from a myPh3 image gallery album to preview.
+Version: 2.0
 Author: Eric Kok
 Author URI: http://myph.sf.net
 */
@@ -56,6 +56,7 @@ function myPh3_add_slimbox_js() {
 
 // Replace [preview][/preview] tags in posts with the correct myPh3 
 // image (and thumbnail) thumnail, as well as show a link to the album
+// Also replaces [album][/album] tags in posts to show all image of an album
 function myPh3_replace_images($content = '') {
 
   // Get the site settings of the myPh3 gallery
@@ -64,34 +65,70 @@ function myPh3_replace_images($content = '') {
     $siteDir .= '/';
   require($siteDir . 'myPh3.config.php');
   
-  // Run through the post contents to replace tags untill there are no more
+  // Run through the post contents to replace [preview] tags untill there are no more
   while (strpos($content, '[preview]') !== FALSE) {
 
     // Get positions and strings
-    $pos_open = strpos($content, '[preview]');
-    $pos_close = strpos($content, '[/preview]');
-    if (!($pos_close >= 0)) {
+    $ppos_open = strpos($content, '[preview]');
+    $ppos_close = strpos($content, '[/preview]');
+    if (!($ppos_close >= 0)) {
       print('Error parsing myPh3 preview: no ending tag after [preview]');
       break;
     }
-    $preview_sub = substr($content, $pos_open + 9, $pos_close - $pos_open - 9);
+    $preview_sub = substr($content, $ppos_open + 9, $ppos_close - $ppos_open - 9);
     // Revert the replacement of the duble dash (--) by an en-dash (– or &#8211; as html char)
     $preview = str_replace('&#8211;', '--', $preview_sub);
 
     // Make full and thumb paths
     if (strpos($preview, $m3['config']['thumbSize'] . '--') == FALSE) {
-      $full = $preview;
-      $thumb = str_replace($m3['config']['fullSize'] . '--', $m3['config']['thumbSize'] . '--', $preview);
+      $pfull = $preview;
+      $pthumb = str_replace($m3['config']['fullSize'] . '--', $m3['config']['thumbSize'] . '--', $preview);
     } else {
-      $full = str_replace($m3['config']['thumbSize'] . '--', $m3['config']['fullSize'] . '--', $preview);
-      $thumb = $preview;
+      $pfull = str_replace($m3['config']['thumbSize'] . '--', $m3['config']['fullSize'] . '--', $preview);
+      $pthumb = $preview;
     }
     
     // Replace the tag with the actual image links
-    $img = '<a href="' . $full . '" rel="lightbox[myPh3]"><img src="' . $thumb . '" alt="" /></a>';
-    $content = str_replace('[preview]' . $preview_sub . '[/preview]', $img, $content);
+    $pimg = '<a href="' . $pfull . '" rel="lightbox[myPh3]"><img src="' . $pthumb . '" alt="" /></a>';
+    $content = str_replace('[preview]' . $preview_sub . '[/preview]', $pimg, $content);
 
   }
+  
+  // Run through the post contents to replace [album] tags untill there are no more
+  while (strpos($content, '[album]') !== FALSE) {
+
+    // Get positions and strings
+    $apos_open = strpos($content, '[album]');
+    $apos_close = strpos($content, '[/album]');
+    if (!($apos_close >= 0)) {
+      print('Error parsing myPh3 preview: no ending tag after [album]');
+      break;
+    }
+    $album_tag = substr($content, $apos_open + 7, $apos_close - $apos_open - 7);
+    // Create the string used to find this album in the thumbnails dir
+    $album_text = strtr($album_tag, '/()', '---');
+    if (substr($album_text, 0, 1) != '-') $album_text = '-' . $album_text;
+    
+    // Look for all images in this album
+    $album_content = '';
+    // Try to read from the myPh3 thumbnail directory
+    $dirList = @opendir($siteDir . $m3['config']['thumbDir']);
+    while (($file = readdir($dirList)) !== false) {
+      // Try to match thumb/full image name to the album (and only use thumb images for this)
+      $album_text_pos = strpos($file, $m3['config']['thumbSize'] . '-' . $album_text);
+      if ($album_text_pos !== false) {
+        // Make full and thumb paths
+        $athumb = $m3['config']['siteUrl'] . '/' . $m3['config']['thumbDir'] . '/' . $file;
+        $afull = str_replace($m3['config']['thumbSize'] . '--', $m3['config']['fullSize'] . '--', $file);
+        $album_content .= '<a href="' . $afull . '" rel="lightbox[myPh3]"><img src="' . $athumb . '" alt="" /></a>';
+      }
+    }
+
+    // Replace the tag with the actual image links
+    $content = str_replace('[album]' . $album_tag . '[/album]', $album_content, $content);
+
+  }
+  
   return $content;
   
 }
