@@ -3,8 +3,8 @@ Contributors: elmotheelk
 Donate link: http://myph3.sf.net/
 Tags: images, gallery, preview
 Requires at least: 2.0.0
-Tested up to: 2.3.2
-Stable tag: 2.0
+Tested up to: 2.3.3
+Stable tag: 2.1
 
 A WordPress plugin to include a myPh3 album image into your posts or pages
 
@@ -29,3 +29,7 @@ Alternatively, you can include all images of an album at once. In a post type [a
 
 2.0 changes:
 - Added support for [album] tag, showing all image that reside within this album (recursive) in one statement.
+
+2.1 changes:
+- Optical change: now show the same light-grey border on all myPh3 preview images in blog posts
+- Bugfix in [album]-style previews incorrectly linking the full size image

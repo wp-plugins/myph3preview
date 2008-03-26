@@ -4,7 +4,7 @@
 Plugin Name: myPh3 preview image
 Plugin URI: http://myph.sf.net
 Description: Displays the thumbnails of a selected image or whole album from a myPh3 image gallery album to preview.
-Version: 2.0
+Version: 2.1
 Author: Eric Kok
 Author URI: http://myph.sf.net
 */
@@ -50,6 +50,7 @@ function myPh3_add_slimbox_js() {
   $slimboxscript.= "<link rel=\"stylesheet\" href=\"".$slimbox_path."slimbox.css\" type=\"text/css\" media=\"screen\" />\n";
   $slimboxscript.= "<script type=\"text/javascript\" src=\"".$slimbox_path."mootools.js\"></script>\n";
   $slimboxscript.= "<script type=\"text/javascript\" src=\"".$slimbox_path."slimbox.js\"></script>\n";
+  $slimboxscript.= "<style type=\"text/css\">.entry img.myPh3 { border: 1px solid #e6e6df; padding: 10px; margin: 0 10px 10px 0; }</style>\n";
   print($slimboxscript);
 
 }
@@ -89,7 +90,7 @@ function myPh3_replace_images($content = '') {
     }
     
     // Replace the tag with the actual image links
-    $pimg = '<a href="' . $pfull . '" rel="lightbox[myPh3]"><img src="' . $pthumb . '" alt="" /></a>';
+    $pimg = '<a href="' . $pfull . '" rel="lightbox[myPh3]"><img src="' . $pthumb . '" alt="" class="myPh3"/></a>';
     $content = str_replace('[preview]' . $preview_sub . '[/preview]', $pimg, $content);
 
   }
@@ -119,8 +120,8 @@ function myPh3_replace_images($content = '') {
       if ($album_text_pos !== false) {
         // Make full and thumb paths
         $athumb = $m3['config']['siteUrl'] . '/' . $m3['config']['thumbDir'] . '/' . $file;
-        $afull = str_replace($m3['config']['thumbSize'] . '--', $m3['config']['fullSize'] . '--', $file);
-        $album_content .= '<a href="' . $afull . '" rel="lightbox[myPh3]"><img src="' . $athumb . '" alt="" /></a>';
+        $afull = str_replace($m3['config']['thumbSize'] . '--', $m3['config']['fullSize'] . '--', $athumb);
+        $album_content .= '<a href="' . $afull . '" rel="lightbox[myPh3]"><img src="' . $athumb . '" alt="" class="myPh3" /></a>';
       }
     }
 
